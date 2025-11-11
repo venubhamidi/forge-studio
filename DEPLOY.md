@@ -16,16 +16,19 @@
 4. Select the **forge-studio** repository
 5. Railway will auto-detect the Dockerfile
 
-### Step 2: Configure Environment Variables
+### Step 2: Configure Environment Variables (Optional)
 
-In Railway dashboard → **Variables** tab, add:
+In Railway dashboard → **Variables** tab, you can optionally add:
 
 | Variable | Value | Required | Notes |
 |----------|-------|----------|-------|
-| `GATEWAY_URL` | `https://your-gateway.up.railway.app` | Yes | Full URL of your MCP Gateway |
-| `BEARER_TOKEN` | `eyJhbGc...` | No | Optional - pre-fills token in UI |
+| `GATEWAY_URL` | `https://your-gateway.up.railway.app` | No | Pre-fills Gateway URL in UI |
+| `BEARER_TOKEN` | `eyJhbGc...` | No | Pre-fills JWT token in UI |
 
-**Note:** The bearer token is optional. If not set, users will need to paste it manually in the UI.
+**Note:** Both variables are optional. If not set, users will enter them manually in the UI after login. This is useful for:
+- Development/testing environments
+- Multi-tenant deployments where different users use different gateways
+- Security: avoid storing sensitive tokens in Railway variables
 
 ### Step 3: Configure Settings
 
@@ -109,8 +112,13 @@ Or get it from your gateway deployment logs.
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `GATEWAY_URL` | Yes | `http://gateway:4444` | URL of your MCP Gateway |
-| `BEARER_TOKEN` | Recommended | - | Pre-fill the bearer token (can also paste in UI) |
+| `GATEWAY_URL` | No | Empty | Pre-fills Gateway URL in UI sidebar |
+| `BEARER_TOKEN` | No | Empty | Pre-fills JWT token in UI sidebar |
+
+**Deployment Strategies:**
+- **No variables**: Users enter everything manually (most flexible)
+- **GATEWAY_URL only**: Pre-fill gateway URL, users paste token
+- **Both variables**: Fully automated (users just login and use)
 
 ## Connecting Gateway and UI
 

@@ -61,7 +61,8 @@ with st.sidebar:
 
     gateway_url = st.text_input(
         "Gateway URL",
-        value=os.getenv("GATEWAY_URL", "http://gateway:4444"),
+        value=os.getenv("GATEWAY_URL", ""),
+        placeholder="https://your-gateway.up.railway.app",
         help="URL of the MCP Gateway instance"
     )
 
@@ -69,6 +70,7 @@ with st.sidebar:
         "Bearer Token",
         type="password",
         value=os.getenv("BEARER_TOKEN", ""),
+        placeholder="Paste your JWT token here",
         help="JWT token for authentication"
     )
 
