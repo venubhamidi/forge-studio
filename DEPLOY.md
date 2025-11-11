@@ -1,45 +1,53 @@
-# Deploy Streamlit UI to Railway
+# Deploy Forge Studio to Railway
 
 ## Prerequisites
 
 - Railway account (https://railway.app)
-- MCP Gateway already deployed (see `../mcp-gateway/DEPLOY.md`)
+- MCP Gateway already deployed (get the URL)
 - Bearer token from MCP Gateway
 
-## Option 1: Deploy via Railway Dashboard (Easiest)
+## Deploy via Railway Dashboard
 
-### Step 1: Create New Project
+### Step 1: Create New Service
 
 1. Go to https://railway.app/new
-2. Click "Deploy from GitHub repo" or "Empty Project"
-3. If using GitHub:
-   - Connect your GitHub account
-   - Select this repository
-   - Set root directory to: `streamlit-ui`
-4. Railway will auto-detect the Dockerfile
+2. Click "Deploy from GitHub repo"
+3. Connect your GitHub account
+4. Select the **forge-studio** repository
+5. Railway will auto-detect the Dockerfile
 
 ### Step 2: Configure Environment Variables
 
-In Railway dashboard, add these variables:
+In Railway dashboard → **Variables** tab, add:
 
-```
-GATEWAY_URL=https://your-gateway-app.up.railway.app
-BEARER_TOKEN=<token-from-gateway>
-```
+| Variable | Value | Required | Notes |
+|----------|-------|----------|-------|
+| `GATEWAY_URL` | `https://your-gateway.up.railway.app` | Yes | Full URL of your MCP Gateway |
+| `BEARER_TOKEN` | `eyJhbGc...` | No | Optional - pre-fills token in UI |
 
-**Important**: Replace `your-gateway-app.up.railway.app` with your actual gateway URL from the previous deployment.
+**Note:** The bearer token is optional. If not set, users will need to paste it manually in the UI.
 
-### Step 3: Deploy
+### Step 3: Configure Settings
 
-1. Click "Deploy"
-2. Wait for build to complete
-3. Railway will provide a public URL (e.g., `https://your-ui.up.railway.app`)
+1. Go to **Settings** tab
+2. **Service Name**: `forge-studio` (or custom name)
+3. **Region**: Choose closest to your users
+4. **Health Check**: Leave default (Railway auto-detects Streamlit)
 
-### Step 4: Access the UI
+### Step 4: Deploy
+
+1. Click "Deploy" in the dashboard
+2. Wait for build to complete (~2-3 minutes)
+3. Once deployed, Railway provides a public URL like:
+   - `https://forge-studio.up.railway.app`
+
+### Step 5: Access Forge Studio
 
 1. Open the Railway-provided URL
-2. The gateway URL and bearer token will be pre-filled
-3. Upload OpenAPI specs and register them
+2. Login with credentials:
+   - **Username**: `admin`
+   - **Password**: `Alekhya0516@654321`
+3. Upload OpenAPI specs and register them as MCP tools
 
 ## Option 2: Deploy via Railway CLI
 
@@ -155,7 +163,8 @@ This keeps traffic internal within Railway's network.
 ### Health Check Fails
 
 - Streamlit health endpoint is `/_stcore/health`
-- This is already configured in `railway.json`
+- Railway should auto-detect this
+- If needed, manually set in Settings → Health Check Path: `/_stcore/health`
 - Check logs if issues persist
 
 ### Blank Page / Won't Load
