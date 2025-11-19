@@ -48,14 +48,25 @@ class OpenAPIToMCP:
         
         return json_schema
     
-    def extract_parameters(self, operation: Dict, path: str) -> Dict:
+    def resolve_ref(self, ref: str, spec: Dict) -> Dict:
+        """Resolve a $ref reference in the OpenAPI spec"""
+        # Handle references like #/components/schemas/SchemaName
+        if ref.startswith('#/'):
+            parts = ref[2:].split('/')
+            result = spec
+            for part in parts:
+                result = result.get(part, {})
+            return result
+        return {}
+
+    def extract_parameters(self, operation: Dict, path: str, spec: Dict) -> Dict:
         """Extract parameters from OpenAPI operation and convert to JSON schema"""
         schema = {
             "type": "object",
             "properties": {},
             "required": []
         }
-        
+
         # Handle path parameters
         if 'parameters' in operation:
             for param in operation['parameters']:
@@ -67,7 +78,7 @@ class OpenAPIToMCP:
                     }
                     if param.get('required', False):
                         schema['required'].append(param_name)
-        
+
         # Handle request body
         if 'requestBody' in operation:
             req_body = operation['requestBody']
@@ -75,21 +86,17 @@ class OpenAPIToMCP:
                 for content_type, content in req_body['content'].items():
                     if 'application/json' in content_type and 'schema' in content:
                         body_schema = content['schema']
-                        
-                        # If it's a reference, we need to resolve it (simplified)
+
+                        # Resolve $ref if present
                         if '$ref' in body_schema:
-                            # For now, just note that body is required
-                            schema['properties']['body'] = {
-                                "type": "object",
-                                "description": "Request body (see OpenAPI spec for full schema)"
-                            }
-                        else:
-                            # Merge body schema properties into main schema
-                            if 'properties' in body_schema:
-                                schema['properties'].update(body_schema['properties'])
-                            if 'required' in body_schema:
-                                schema['required'].extend(body_schema['required'])
-        
+                            body_schema = self.resolve_ref(body_schema['$ref'], spec)
+
+                        # Merge body schema properties into main schema
+                        if 'properties' in body_schema:
+                            schema['properties'].update(body_schema['properties'])
+                        if 'required' in body_schema:
+                            schema['required'].extend(body_schema['required'])
+
         return schema
     
     def register_tool(self, tool_data: Dict) -> Dict:
@@ -159,9 +166,9 @@ class OpenAPIToMCP:
                 
                 # Build full URL with path
                 full_url = f"{base_url.rstrip('/')}{path}"
-                
+
                 # Extract and convert parameters
-                input_schema = self.extract_parameters(operation, path)
+                input_schema = self.extract_parameters(operation, path, spec)
                 
                 tool_data = {
                     "name": operation_id,
