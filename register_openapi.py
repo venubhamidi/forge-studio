@@ -49,13 +49,26 @@ class OpenAPIToMCP:
         return json_schema
     
     def resolve_ref(self, ref: str, spec: Dict) -> Dict:
-        """Resolve a $ref reference in the OpenAPI spec"""
+        """Resolve a $ref reference in the OpenAPI spec (recursively)"""
         # Handle references like #/components/schemas/SchemaName
         if ref.startswith('#/'):
             parts = ref[2:].split('/')
             result = spec
             for part in parts:
                 result = result.get(part, {})
+
+            # Recursively resolve any nested $refs in properties
+            if 'properties' in result:
+                resolved_props = {}
+                for prop_name, prop_schema in result['properties'].items():
+                    if isinstance(prop_schema, dict) and '$ref' in prop_schema:
+                        # Recursively resolve the nested ref
+                        resolved_props[prop_name] = self.resolve_ref(prop_schema['$ref'], spec)
+                    else:
+                        resolved_props[prop_name] = prop_schema
+                result = dict(result)  # Make a copy
+                result['properties'] = resolved_props
+
             return result
         return {}
 
